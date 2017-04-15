@@ -3,5 +3,8 @@
 import PackageDescription
 
 let package = Package(
-    name: "RxGtk"
+    name: "RxGtk",
+    dependencies: [
+        .Package(url: "https://github.com/rhx/SwiftGtk.git", majorVersion: 3)
+    ]
 )
