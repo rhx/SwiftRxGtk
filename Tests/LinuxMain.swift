@@ -1,6 +1,6 @@
 import XCTest
-@testable import SwiftRxGtkTests
+@testable import RxGtkTests
 
 XCTMain([
-    testCase(SwiftRxGtkTests.allTests),
+    testCase(RxGtkTests.allTests),
 ])
