@@ -1,4 +1,3 @@
-struct SwiftRxGtk {
-
-    var text = "Hello, World!"
-}
+import CGLib
+import GLib
+import GLibObject
