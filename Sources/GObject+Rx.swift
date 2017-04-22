@@ -25,7 +25,7 @@ extension Reactive where Base == ObjectRef {
     ///   - options: `BindingFlags` to use (defaults to `.sync_create`)
     ///   - retainSelf: `true` if the observable should retain the object
     /// - Returns: an observable for the given property
-    public func observe<E>(_ type: E.Type, _ property: PropertyName, options: BindingFlags = .sync_create, retainSelf: Bool = true) -> Observable<E?> {
+    public func observe<E, P: PropertyNameProtocol>(_ property: P, options: BindingFlags = .sync_create, retainSelf: Bool = true) -> Observable<E?> {
         return PropertyObservable(object: base, property: property, options: options, retainTarget: retainSelf).asObservable()
     }
 }
@@ -40,7 +40,7 @@ extension Reactive where Base: Object {
     ///   - options: `BindingFlags` to use (defaults to `.sync_create`)
     ///   - retainSelf: `true` if the observable should retain the object
     /// - Returns: an observable for the given property
-    public func observe<E>(_ type: E.Type, _ property: PropertyName, options: BindingFlags = .sync_create, retainSelf: Bool = true) -> Observable<E?> {
+    public func observe<E, P: PropertyNameProtocol>(_ property: P, options: BindingFlags = .sync_create, retainSelf: Bool = true) -> Observable<E?> {
         return PropertyObservable(object: ObjectRef(base.ptr), property: property, options: options, retainTarget: retainSelf).asObservable()
     }
 }
@@ -55,13 +55,13 @@ extension Reactive where Base: ObjectProtocol {
     ///   - options: `BindingFlags` to use (defaults to `.sync_create`)
     ///   - retainSelf: `true` if the observable should retain the object
     /// - Returns: an observable for the given property
-    public func observe<E>(_ type: E.Type, _ property: PropertyName, options: BindingFlags = .sync_create, retainSelf: Bool = true) -> Observable<E?> {
+    public func observe<E, P: PropertyNameProtocol>(_ property: P, options: BindingFlags = .sync_create, retainSelf: Bool = true) -> Observable<E?> {
         return PropertyObservable(object: ObjectRef(base.ptr), property: property, options: options, retainTarget: retainSelf).asObservable()
     }
 }
 
 
-fileprivate protocol PropertyObservableProtocol {
+protocol PropertyObservableProtocol {
     var target: ObjectRef { get }
     var propertyName: PropertyName { get }
     var retainTarget: Bool { get }
@@ -70,7 +70,7 @@ fileprivate protocol PropertyObservableProtocol {
 
 fileprivate let dummy_property: PropertyName = "any"
 
-fileprivate class PropertyObserver: PropertyObservableProtocol, Disposable {
+class PropertyObserver: PropertyObservableProtocol, Disposable {
     typealias Callback = (ValueRef) -> Void
 
     var object: ObjectRef
@@ -115,7 +115,7 @@ fileprivate class PropertyObserver: PropertyObservableProtocol, Disposable {
     }
 }
 
-fileprivate final class PropertyObservable<Element>: ObservableType, PropertyObservableProtocol {
+class PropertyObservable<Element, P: PropertyNameProtocol>: ObservableType, PropertyObservableProtocol {
     typealias E = Element?
 
     var target: ObjectRef
@@ -125,9 +125,9 @@ fileprivate final class PropertyObservable<Element>: ObservableType, PropertyObs
     var options: BindingFlags
     var retainTarget: Bool
 
-    init(object: ObjectRef, property: PropertyName, options: BindingFlags = .sync_create, retainTarget: Bool = false) {
+    init(object: ObjectRef, property: P, options: BindingFlags = .sync_create, retainTarget: Bool = false) {
         self.target = object
-        self.propertyName = property
+        self.propertyName = PropertyName(property)
         self.options = options
         self.retainTarget = retainTarget
         if retainTarget { _ = target.ref() }
