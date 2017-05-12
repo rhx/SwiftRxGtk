@@ -13,8 +13,6 @@ if ! pushd .build/gir2swift >/dev/null 2>&1 ; then
 fi
 export PATH=`pwd`/.build/debug:${PATH}
 popd >/dev/null
-export PACKAGES=.build/checkouts
-[ -e $PACKAGES ] || export PACKAGES=Packages
 if which parallel >/dev/null ; then
   for gen in $PACKAGES/*/gir-to-swift.sh ; do \
 	echo echo \"Generate Swift Wrapper for `basename $(dirname $gen) | cut -d- -f1`\" \; \
