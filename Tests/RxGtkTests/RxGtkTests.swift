@@ -121,8 +121,27 @@ class RxGtkTests: XCTestCase {
         XCTAssertTrue(disposed)
     }
 
+    func testWidget() {
+        let name = "Widget"
+        var widget = Label(str: name)
+        widget.hexpand = false
+        widget.vexpand = false
+        XCTAssertFalse(widget.hexpand)
+        XCTAssertFalse(widget.vexpand)
+        let t = Observable.just(true).asDriver(onErrorJustReturn: false)
+        let disposable = t.drive(widget.rx.expand)
+        disposable.dispose()
+        XCTAssertTrue(widget.hexpand)
+        XCTAssertTrue(widget.vexpand)
+        let test = "Test"
+        let o = Observable.just(test).asDriver(onErrorJustReturn: "Error")
+        o.drive(widget.rx.name).dispose()
+        XCTAssertEqual(widget.name, test)
+    }
+
     static var allTests = [
-        ("testLabel", testLabel),
-        ("testEntry", testEntry),
+        ("testLabel",   testLabel),
+        ("testEntry",   testEntry),
+        ("testWidget",  testWidget),
     ]
 }
