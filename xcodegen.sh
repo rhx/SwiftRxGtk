@@ -5,7 +5,8 @@
 # and pass them to subprojects, based on the configured -I flags.
 #
 . ./config.sh
-[ -e Sources/${Module}.swift ] || ./generate-wrapper.sh
+gtk=`echo .build/checkouts/SwiftGtk.*/Sources/Gtk-3.0.swift`
+[ -e $gtk ] || ./generate-wrapper.sh
 ./package.sh generate-xcodeproj "$@"
 [ ! -e ${Mod}.xcodeproj/Configs ] ||					   \
 ( cd ${Mod}.xcodeproj/Configs						&& \
