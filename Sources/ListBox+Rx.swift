@@ -142,7 +142,7 @@ extension RxListBoxDataSource {
         return RxListBoxDataSource()
     }
 
-    public static func assignProxy<O: ObjectProtocol>(_ dataSource: RxListBoxDataSource, toObject object: O) {
+    public static func assignProxy<O: ObjectProtocol>(_ dataSource: RxListBoxDataSource?, toObject object: O) {
         proxies[object.ptr] = dataSource
     }
 }
@@ -172,11 +172,16 @@ extension ObservableType {
                     bindingErrorToInterface(error)
                 case .completed: break
                 default: break
+                }
             }
-        }
-
+        weak var weakProxy = proxy
         return Disposables.create { [weak object] in
-            _ = object
+            if let o = object {
+                if let assignedProxy = RxListBoxDataSource.assignedProxyFor(o),
+                    assignedProxy === weakProxy {
+                    RxListBoxDataSource.assignProxy(nil, toObject: o)
+                }
+            }
             subscription.dispose()
         }
     }
