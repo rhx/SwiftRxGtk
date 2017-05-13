@@ -5,6 +5,8 @@
 # and pass them to subprojects, based on the configured -I flags.
 #
 . ./config.sh
+export PACKAGES=.build/checkouts
+[ -e $PACKAGES ] || export PACKAGES=Packages
 gtk=`echo $PACKAGES/*Gtk*/Sources/Gtk-3.0.swift`
 [ -e $gtk ] || ./generate-wrapper.sh
 ./package.sh generate-xcodeproj "$@"
