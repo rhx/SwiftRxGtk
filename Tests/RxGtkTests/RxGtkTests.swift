@@ -114,7 +114,6 @@ class RxGtkTests: XCTestCase {
         XCTAssertEqual(result, expectedValue)
         XCTAssertFalse(completed)
         XCTAssertFalse(disposed)
-        textField.text = nil
         textField = nil
         XCTAssertFalse(completed)
         controlSub.dispose()

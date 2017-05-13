@@ -114,6 +114,7 @@ class PropertyObserver: PropertyObservableProtocol, Disposable {
             self.callback(src)
             return true
         }
+        _ = binding?.ref()
 
         if retainTarget { _ = target.ref() }
     }
