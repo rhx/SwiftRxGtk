@@ -30,7 +30,6 @@ extension Reactive where Base == ObjectRef {
     }
 }
 
-
 extension Reactive where Base: Object {
     /// Observerve a given property on a GObject subclass
     ///
@@ -42,6 +41,24 @@ extension Reactive where Base: Object {
     /// - Returns: an observable for the given property
     public func observe<E, P: PropertyNameProtocol>(_ property: P, options: BindingFlags = .sync_create, retainSelf: Bool = true) -> Observable<E?> {
         return PropertyObservable(object: ObjectRef(base.ptr), property: property, options: options, retainTarget: retainSelf).asObservable()
+    }
+
+#if os(Linux)
+    /// Observable sequence of object deallocation event.
+    /// After object is deallocated one `()` element will be produced and
+    /// the sequence will immediately complete.
+    public var deallocated: Observable<Void> {
+        return synchronized {
+            return .never() // FIXME: should observe GObject deallocation
+        }
+    }
+#endif
+
+    func synchronized<T>( _ action: () -> T) -> T {
+        g_mutex_lock(objectMutex)
+        let result = action()
+        g_mutex_unlock(objectMutex)
+        return result
     }
 }
 
@@ -181,3 +198,9 @@ fileprivate func property_observer_set_property(_ object: UnsafeMutablePointer<G
 
 fileprivate func property_observer_get_property(_ object: UnsafeMutablePointer<GObject>?, _ property_id: guint, _ value: UnsafeMutablePointer<GValue>?, _ pspec: UnsafeMutablePointer<GParamSpec>?) {
 }
+
+fileprivate var objectMutex: UnsafeMutablePointer<GMutex> = {
+    let mutex = UnsafeMutablePointer<GMutex>.allocate(capacity: 1)
+    g_mutex_init(mutex)
+    return mutex
+}()
