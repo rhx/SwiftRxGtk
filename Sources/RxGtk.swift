@@ -36,3 +36,14 @@ class ControlObservable<Element, P: PropertyNameProtocol>: PropertyObservable<El
         return Disposables.create(with: observer.dispose)
     }
 }
+
+// MARK: Error binding policies
+
+func bindingErrorToInterface(_ error: Swift.Error) {
+    let error = "Binding error to UI: \(error)"
+    #if DEBUG
+        rxFatalError(error)
+    #else
+        print(error)
+    #endif
+}
