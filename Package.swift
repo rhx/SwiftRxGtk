@@ -7,5 +7,6 @@ let package = Package(
     dependencies: [
         .Package(url: "https://github.com/ReactiveX/RxSwift.git", majorVersion: 3),
         .Package(url: "https://github.com/rhx/SwiftGtk.git", majorVersion: 3)
-    ]
+    ],
+    swiftLanguageVersions: [3, 4]
 )
