@@ -6,7 +6,7 @@
 ver=3.0
 Mod=RxGtk
 Module=${Mod}-$ver
-mod=`echo "${Mod}" | tr '[:upper:]' '[:lower:]'`+
+mod=`echo "${Mod}" | head -n1 | tr '[:upper:]' '[:lower:]'`+
 module="${mod}-${ver}"
 PROJECT_DIR=`pwd`
 BUILD_DIR="$PROJECT_DIR/.build"

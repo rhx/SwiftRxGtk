@@ -1,12 +1,17 @@
-// swift-tools-version:3.1
+// swift-tools-version:4.0
 
 import PackageDescription
 
 let package = Package(
     name: "RxGtk",
-    dependencies: [
-        .Package(url: "https://github.com/ReactiveX/RxSwift.git", majorVersion: 3),
-        .Package(url: "https://github.com/rhx/SwiftGtk.git", majorVersion: 3)
+    products: [
+        .library(name: "RxGtk", targets: ["RxGtk"]),
     ],
-    swiftLanguageVersions: [3, 4]
+    dependencies: [
+        .package(url: "https://github.com/ReactiveX/RxSwift.git", .branch("master")),
+        .package(url: "https://github.com/rhx/SwiftGtk.git", .branch("master")),
+    ],
+    targets: [
+        .target(name: "RxGtk", dependencies: ["Gtk", "RxCocoa", "RxSwift"]),
+    ]
 )

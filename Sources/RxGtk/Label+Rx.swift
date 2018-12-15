@@ -3,7 +3,7 @@
 //  RxGtk
 //
 //  Created by Rene Hexel on 22/4/17.
-//  Copyright © 2017 Rene Hexel.  All rights reserved.
+//  Copyright © 2017, 2018 Rene Hexel.  All rights reserved.
 //
 import CGLib
 import GLib
@@ -16,15 +16,15 @@ import RxCocoa
 public extension Reactive where Base: Label {
 
     /// Bindable sink for `text` property.
-    public var text: UIBindingObserver<Base, String?> {
-        return UIBindingObserver(UIElement: base) { label, text in
+    public var text: Binder<String?> {
+        return Binder(self.base) { label, text in
             label.set(text: text ?? "")
         }
     }
 
     /// Bindable sink for `label` (mnemonic text) property.
-    public var label: UIBindingObserver<Base, String?> {
-        return UIBindingObserver(UIElement: base) { label, text in
+    public var label: Binder<String?> {
+        return Binder(self.base) { label, text in
             label.set(label: text ?? "")
         }
     }

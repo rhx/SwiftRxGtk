@@ -3,7 +3,7 @@
 //  RxGtk
 //
 //  Created by Rene Hexel on 16/4/17.
-//  Copyright © 2017 Rene Hexel.  All rights reserved.
+//  Copyright © 2017, 2018 Rene Hexel.  All rights reserved.
 //
 import CGLib
 import GLib
@@ -182,7 +182,8 @@ fileprivate func property_observer_class_init(_ cl: gpointer?, _: gpointer?) {
     guard let object_class = cl?.assumingMemoryBound(to: GObjectClass.self) else { return }
     object_class.pointee.set_property = property_observer_set_property
     object_class.pointee.get_property = property_observer_get_property
-    g_object_class_install_property(object_class, 1, g_param_spec_string(dummy_property.name, dummy_property.name, "Dummy property", "", G_PARAM_READWRITE))
+    let readwrite = ParamFlags(rawValue: 3)
+    g_object_class_install_property(object_class, 1, g_param_spec_string(dummy_property.name, dummy_property.name, "Dummy property", "", readwrite))
 }
 
 fileprivate var type: GType = 0

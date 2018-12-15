@@ -102,7 +102,7 @@ public class RxListBoxReactiveArrayDataSourceSequenceWrapper<S: Swift.Sequence>:
     }
 
     public func listBox(_ listBox: ListBoxRef, observedEvent: Event<S>) {
-        UIBindingObserver(UIElement: self) { listBoxDataSource, sectionModels in
+        Binder(self) { listBoxDataSource, sectionModels in
             let sections = Array(sectionModels)
             listBoxDataSource.listBox(listBox, observedElements: sections)
             }.on(observedEvent)

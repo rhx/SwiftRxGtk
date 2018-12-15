@@ -2,7 +2,7 @@
 //  RxGtk.swift
 //
 //  Created by Rene Hexel on 16/4/17.
-//  Copyright © 2017 Rene Hexel.  All rights reserved.
+//  Copyright © 2017, 2018 Rene Hexel.  All rights reserved.
 //
 import CGLib
 import GLib
@@ -42,7 +42,7 @@ class ControlObservable<Element, P: PropertyNameProtocol>: PropertyObservable<El
 func bindingErrorToInterface(_ error: Swift.Error) {
     let error = "Binding error to UI: \(error)"
     #if DEBUG
-        rxFatalError(error)
+        fatalError(error)
     #else
         print(error)
     #endif
