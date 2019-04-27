@@ -3,7 +3,7 @@
 //  RxGtk
 //
 //  Created by Rene Hexel on 22/4/17.
-//  Copyright © 2017 Rene Hexel.  All rights reserved.
+//  Copyright © 2017, 2019 Rene Hexel.  All rights reserved.
 //
 import CGLib
 import GLib
@@ -14,24 +14,19 @@ import RxSwift
 import RxCocoa
 
 public extension Reactive where Base: TextView {
-//
-//    /// Reactive wrapper for the `text` property
-//    public var text: ControlProperty<String?> { return value }
-//
-//    /// Reactive value wrapper for the `text` property.
-//    public var value: ControlProperty<String?> {
-//        return Object.rx.value(
-//            base, property: EntryPropertyName.text
-//            getter: { textField in
-//                textField.text
-//        }, setter: { textField, value in
-//            // This check is important because setting text value always clears control state
-//            // including marked text selection which is imporant for proper input
-//            // when IME input method is used.
-//            if textField.text != value {
-//                textField.text = value
-//            }
-//        }
-//        )
-//    }
+
+    /// Reactive wrapper for the `text` property
+    var text: ControlProperty<String?> { return value }
+
+    /// Reactive value wrapper for the `value` property.
+    var value: ControlProperty<String?> {
+        let source: Observable<String?> = TextBuffer(base.buffer).rx.observe(EntryPropertyName.text)
+        let observer = Binder(base) { (control, value: String?) in
+            control.buffer.map {
+                let string = value ?? ""
+                TextBufferRef($0).set(text: string, len: CInt(string.utf8.count))
+            }
+        }
+        return ControlProperty(values: source, valueSink: observer)
+    }
 }

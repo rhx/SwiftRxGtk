@@ -3,7 +3,7 @@
 //  RxGtk
 //
 //  Created by Rene Hexel on 12/05/2017.
-//  Copyright © 2017 Rene Hexel.  All rights reserved.
+//  Copyright © 2017, 2019 Rene Hexel.  All rights reserved.
 //
 import Foundation
 import CGLib
@@ -28,15 +28,15 @@ public protocol RxListBoxDataSourceType {
 }
 
 
-extension Reactive where Base: ListBox {
-    public func items<S: Swift.Sequence, O: ObservableType>(_ source: O) -> (_ cellFactory: @escaping (ListBoxRef, Int, S.Iterator.Element, ListBoxRow?) -> ListBoxRow) -> Disposable where O.E == S {
+public extension Reactive where Base: ListBox {
+    func items<S: Swift.Sequence, O: ObservableType>(_ source: O) -> (_ cellFactory: @escaping (ListBoxRef, Int, S.Iterator.Element, ListBoxRow?) -> ListBoxRow) -> Disposable where O.E == S {
         return { cellFactory in
             let dataSource = RxListBoxReactiveArrayDataSourceSequenceWrapper<S>(cellFactory)
             return self.items(dataSource)(source)
         }
     }
 
-    public func items<O: ObservableType, S: Swift.Sequence>(_ dataSource: RxListBoxReactiveArrayDataSourceSequenceWrapper<S>) -> (_ source: O) -> Disposable where O.E == S {
+    func items<O: ObservableType, S: Swift.Sequence>(_ dataSource: RxListBoxReactiveArrayDataSourceSequenceWrapper<S>) -> (_ source: O) -> Disposable where O.E == S {
         return { source in
             // Strong reference is needed because data source is in use until result subscription is disposed
             return source.subscribeProxyDataSource(ofWidget: self.base, dataSource: dataSource, retainDataSource: true) { [weak listBox = self.base] (_: RxListBoxDataSource, event) -> Void in
@@ -111,13 +111,13 @@ public class RxListBoxReactiveArrayDataSourceSequenceWrapper<S: Swift.Sequence>:
 
 var proxies: [UnsafeMutableRawPointer : RxListBoxDataSource] = [:]
 
-extension RxListBoxDataSource {
+public extension RxListBoxDataSource {
     /// Returns existing proxy for object or installs new instance of delegate proxy.
     ///
     /// - parameter object: Target GLib object on which to install delegate proxy.
     /// - returns: Installed instance of delegate proxy.
     ///
-    public static func proxyForObject<O: ObjectProtocol>(_ object: O) -> RxListBoxDataSource {
+    static func proxyForObject<O: ObjectProtocol>(_ object: O) -> RxListBoxDataSource {
         MainScheduler.ensureExecutingOnScheduler()
 
         let maybeProxy = RxListBoxDataSource.assignedProxyFor(object)
@@ -134,20 +134,20 @@ extension RxListBoxDataSource {
         return proxy
     }
 
-    public static func assignedProxyFor<O: ObjectProtocol>(_ object: O) -> RxListBoxDataSource? {
+    static func assignedProxyFor<O: ObjectProtocol>(_ object: O) -> RxListBoxDataSource? {
         return proxies[object.ptr]
     }
 
-    public static func createProxyFor<O: ObjectProtocol>(_ object: O) -> RxListBoxDataSource? {
+    static func createProxyFor<O: ObjectProtocol>(_ object: O) -> RxListBoxDataSource? {
         return RxListBoxDataSource()
     }
 
-    public static func assignProxy<O: ObjectProtocol>(_ dataSource: RxListBoxDataSource?, toObject object: O) {
+    static func assignProxy<O: ObjectProtocol>(_ dataSource: RxListBoxDataSource?, toObject object: O) {
         proxies[object.ptr] = dataSource
     }
 }
 
-extension ObservableType {
+public extension ObservableType {
     func subscribeProxyDataSource(ofWidget object: Widget, dataSource: RxListBoxDataSource, retainDataSource: Bool = true, binding: @escaping (RxListBoxDataSource, Event<E>) -> Void) -> Disposable {
         let proxy = RxListBoxDataSource.proxyForObject(object)
         let subscription = self.asObservable()

@@ -5,15 +5,13 @@
 # and pass them to subprojects, based on the configured -I flags.
 #
 . ./config.sh
-export PACKAGES=.build/checkouts
-[ -e $PACKAGES ] || export PACKAGES=Packages
-gtk=`echo $PACKAGES/*Gtk*/Sources/Gtk/Gtk-3.0.swift`
+gtk=`echo .build/checkouts/SwiftGtk/Sources/Gtk/Gtk-3.0.swift`
 [ -e $gtk ] || ./generate-wrapper.sh
 ./package.sh generate-xcodeproj "$@"
 [ ! -e ${Mod}.xcodeproj/Configs ] ||					   \
 ( cd ${Mod}.xcodeproj/Configs						&& \
   mv Project.xcconfig Project.xcconfig.in				&& \
-  echo 'SWIFT_VERSION = 3.0' >> Project.xcconfig.in			&& \
+  echo 'SWIFT_VERSION = 5.0' >> Project.xcconfig.in			&& \
   sed -e 's/ -I ?[^ ]*//g' < Project.xcconfig.in > Project.xcconfig	&& \
   grep 'OTHER_CFLAGS' < Project.xcconfig.in | sed 's/-I */-I/g'		|  \
     tr ' ' '\n' | grep -- -I | tr '\n' ' '				|  \

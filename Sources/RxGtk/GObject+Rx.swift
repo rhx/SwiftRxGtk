@@ -3,7 +3,7 @@
 //  RxGtk
 //
 //  Created by Rene Hexel on 16/4/17.
-//  Copyright © 2017, 2018 Rene Hexel.  All rights reserved.
+//  Copyright © 2017, 2018, 2019 Rene Hexel.  All rights reserved.
 //
 import CGLib
 import GLib
@@ -30,7 +30,7 @@ extension Reactive where Base == ObjectRef {
     }
 }
 
-extension Reactive where Base: Object {
+public extension Reactive where Base: Object {
     /// Observerve a given property on a GObject subclass
     ///
     /// - Parameters:
@@ -39,7 +39,7 @@ extension Reactive where Base: Object {
     ///   - options: `BindingFlags` to use (defaults to `.sync_create`)
     ///   - retainSelf: `true` if the observable should retain the object
     /// - Returns: an observable for the given property
-    public func observe<E, P: PropertyNameProtocol>(_ property: P, options: BindingFlags = .sync_create, retainSelf: Bool = true) -> Observable<E?> {
+    func observe<E, P: PropertyNameProtocol>(_ property: P, options: BindingFlags = .sync_create, retainSelf: Bool = true) -> Observable<E?> {
         return PropertyObservable(object: ObjectRef(base.ptr), property: property, options: options, retainTarget: retainSelf).asObservable()
     }
 
@@ -47,7 +47,7 @@ extension Reactive where Base: Object {
     /// Observable sequence of object deallocation event.
     /// After object is deallocated one `()` element will be produced and
     /// the sequence will immediately complete.
-    public var deallocated: Observable<Void> {
+    var deallocated: Observable<Void> {
         return synchronized {
             return .never() // FIXME: should observe GObject deallocation
         }
@@ -63,7 +63,7 @@ extension Reactive where Base: Object {
 }
 
 
-extension Reactive where Base: ObjectProtocol {
+public extension Reactive where Base: ObjectProtocol {
     /// Observerve a given property on a type that conforms to `ObjectProtocol`
     ///
     /// - Parameters:
@@ -72,13 +72,13 @@ extension Reactive where Base: ObjectProtocol {
     ///   - options: `BindingFlags` to use (defaults to `.sync_create`)
     ///   - retainSelf: `true` if the observable should retain the object
     /// - Returns: an observable for the given property
-    public func observe<E, P: PropertyNameProtocol>(_ property: P, options: BindingFlags = .sync_create, retainSelf: Bool = true) -> Observable<E?> {
+    func observe<E, P: PropertyNameProtocol>(_ property: P, options: BindingFlags = .sync_create, retainSelf: Bool = true) -> Observable<E?> {
         return PropertyObservable(object: ObjectRef(base.ptr), property: property, options: options, retainTarget: retainSelf).asObservable()
     }
 }
 
 
-protocol PropertyObservableProtocol {
+public protocol PropertyObservableProtocol {
     var target: ObjectRef { get }
     var propertyName: PropertyName { get }
     var retainTarget: Bool { get }
@@ -87,18 +87,18 @@ protocol PropertyObservableProtocol {
 
 fileprivate let dummy_property: PropertyName = "any"
 
-class PropertyObserver: PropertyObservableProtocol, Disposable {
-    typealias Callback = (ValueRef) -> Void
+public class PropertyObserver: PropertyObservableProtocol, Disposable {
+    public typealias Callback = (ValueRef) -> Void
 
-    var object: ObjectRef
-    var target: ObjectRef
-    var binding: BindingRef?
-    var callback: Callback
-    var propertyName: PropertyName
-    var retainTarget: Bool
-    var options: BindingFlags
+    public var object: ObjectRef
+    public var target: ObjectRef
+    public var binding: BindingRef?
+    public var callback: Callback
+    public var propertyName: PropertyName
+    public var retainTarget: Bool
+    public var options: BindingFlags
 
-    init(parent: PropertyObservableProtocol, callback: @escaping Callback) {
+    public init(parent: PropertyObservableProtocol, callback: @escaping Callback) {
         #if TRACE_RESOURCES
             _ = Resources.incrementTotal()
         #endif
@@ -119,7 +119,7 @@ class PropertyObserver: PropertyObservableProtocol, Disposable {
         if retainTarget { _ = target.ref() }
     }
 
-    func dispose() {
+    public func dispose() {
         binding?.unbind()
         binding = nil
         if retainTarget { target.unref() }
@@ -133,17 +133,17 @@ class PropertyObserver: PropertyObservableProtocol, Disposable {
     }
 }
 
-class PropertyObservable<Element, P: PropertyNameProtocol>: ObservableType, PropertyObservableProtocol {
-    typealias E = Element?
+public class PropertyObservable<Element, P: PropertyNameProtocol>: ObservableType, PropertyObservableProtocol {
+    public typealias E = Element?
 
-    var target: ObjectRef
+    public var target: ObjectRef
     var strongTarget: AnyObject?
 
-    var propertyName: PropertyName
-    var options: BindingFlags
-    var retainTarget: Bool
+    public var propertyName: PropertyName
+    public var options: BindingFlags
+    public var retainTarget: Bool
 
-    init(object: ObjectRef, property: P, options: BindingFlags = .sync_create, retainTarget: Bool = false) {
+    public init(object: ObjectRef, property: P, options: BindingFlags = .sync_create, retainTarget: Bool = false) {
         self.target = object
         self.propertyName = PropertyName(property)
         self.options = options
@@ -155,7 +155,7 @@ class PropertyObservable<Element, P: PropertyNameProtocol>: ObservableType, Prop
         if retainTarget { target.unref() }
     }
 
-    func subscribe<O: ObserverType>(_ observer: O) -> Disposable where O.E == E {
+    public func subscribe<O: ObserverType>(_ observer: O) -> Disposable where O.E == E {
         let observer = PropertyObserver(parent: self) {
             guard let v: Element = $0.get() else {
                     observer.on(.next(nil))
