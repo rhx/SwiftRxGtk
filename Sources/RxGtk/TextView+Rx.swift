@@ -20,6 +20,7 @@ public extension Reactive where Base: TextView {
 
     /// Reactive value wrapper for the `value` property.
     var value: ControlProperty<String> {
+        _ = TextBufferRef(base.buffer).ref()
         let source: Observable<String> = TextBuffer(base.buffer).rx.observe(EntryPropertyName.text).map { $0 ?? "" }
         let observer = Binder(base) { (control, value: String) in
             control.buffer.map {
