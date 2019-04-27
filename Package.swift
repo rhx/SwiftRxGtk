@@ -13,5 +13,6 @@ let package = Package(
     ],
     targets: [
         .target(name: "RxGtk", dependencies: ["Gtk", "RxCocoa", "RxSwift"]),
+        .testTarget(name: "RxGtkTests", dependencies: ["RxGtk"]),
     ]
 )
