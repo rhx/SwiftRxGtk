@@ -138,9 +138,67 @@ class RxGtkTests: XCTestCase {
         XCTAssertEqual(widget.name, test)
     }
 
+    func testTextView() {
+        let s = "Hello"
+        var textView: TextView! = TextView()
+        var expectedValue = ""
+        var expectNil = false
+        XCTAssertNotNil(textView.buffer)
+        XCTAssertNotNil(textView.text)
+        XCTAssertEqual(textView.text, expectedValue)
+        expectedValue = s
+        TextBufferRef(textView.buffer).set(text: expectedValue, len: CInt(expectedValue.utf8.count))
+        XCTAssertNotNil(textView.text)
+        XCTAssertEqual(textView.text, expectedValue)
+        let t = "World"
+        let o = Observable.just(t)
+        expectedValue = t
+        let subscription = o.subscribe(onNext: {
+            XCTAssertEqual($0, expectedValue)
+            TextBufferRef(textView.buffer).set(text: $0, len: CInt($0.utf8.count))
+            XCTAssertEqual(textView.text, expectedValue)
+            expectNil = true
+        }, onCompleted: {
+            XCTAssertTrue(expectNil)
+        })
+        XCTAssertEqual(textView.text, expectedValue)
+        subscription.dispose()
+        expectedValue = "Drive"
+        let d = Observable.just(expectedValue).asDriver(onErrorJustReturn: "Error")
+        let disposable = d.drive(textView.rx.text)
+        XCTAssertEqual(textView.text, expectedValue)
+        disposable.dispose()
+        expectedValue = "Subscription"
+        TextBufferRef(textView.buffer).set(text: expectedValue, len: CInt(expectedValue.utf8.count))
+        var result = "Unexpected"
+        var completed = false
+        var disposed = false
+        let controlSub = textView.rx.text.subscribe(onNext: {
+            result = $0 + "Test"
+            let s = strdup($0)
+            result = s.map { String(cString: $0) } ?? ""
+            XCTAssertEqual($0, expectedValue)
+            free(s)
+        }, onError: {
+            _ in XCTFail()
+        }, onCompleted: {
+            completed = true
+        }, onDisposed: {
+            disposed = true
+        })
+        XCTAssertEqual(result, expectedValue)
+        XCTAssertFalse(completed)
+        XCTAssertFalse(disposed)
+        textView = nil
+        XCTAssertFalse(completed)
+        controlSub.dispose()
+        XCTAssertTrue(disposed)
+    }
+    
     static var allTests = [
         ("testLabel",   testLabel),
         ("testEntry",   testEntry),
         ("testWidget",  testWidget),
+        ("testTextView",testTextView),
     ]
 }
