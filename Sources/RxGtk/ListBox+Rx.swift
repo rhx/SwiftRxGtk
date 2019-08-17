@@ -29,19 +29,19 @@ public protocol RxListBoxDataSourceType {
 
 
 public extension Reactive where Base: ListBox {
-    func items<S: Swift.Sequence, O: ObservableType>(_ source: O) -> (_ cellFactory: @escaping (ListBoxRef, Int, S.Iterator.Element, ListBoxRow?) -> ListBoxRow) -> Disposable where O.E == S {
+    func items<S: Swift.Sequence, O: ObservableType>(_ source: O) -> (_ cellFactory: @escaping (ListBoxRef, Int, S.Iterator.Element, ListBoxRow?) -> ListBoxRow) -> Disposable where O.Element == S {
         return { cellFactory in
             let dataSource = RxListBoxReactiveArrayDataSourceSequenceWrapper<S>(cellFactory)
             return self.items(dataSource)(source)
         }
     }
 
-    func items<O: ObservableType, S: Swift.Sequence>(_ dataSource: RxListBoxReactiveArrayDataSourceSequenceWrapper<S>) -> (_ source: O) -> Disposable where O.E == S {
+    func items<O: ObservableType, S: Swift.Sequence>(_ dataSource: RxListBoxReactiveArrayDataSourceSequenceWrapper<S>) -> (_ source: O) -> Disposable where O.Element == S {
         return { source in
             // Strong reference is needed because data source is in use until result subscription is disposed
             return source.subscribeProxyDataSource(ofWidget: self.base, dataSource: dataSource, retainDataSource: true) { [weak listBox = self.base] (_: RxListBoxDataSource, event) -> Void in
                 guard let listBox = listBox else { return }
-                dataSource.listBox(ListBoxRef(cPointer: listBox.ptr), observedEvent: event)
+                dataSource.listBox(ListBoxRef(listBox.list_box_ptr), observedEvent: event)
             }
         }
     }
@@ -148,7 +148,7 @@ public extension RxListBoxDataSource {
 }
 
 public extension ObservableType {
-    func subscribeProxyDataSource(ofWidget object: Widget, dataSource: RxListBoxDataSource, retainDataSource: Bool = true, binding: @escaping (RxListBoxDataSource, Event<E>) -> Void) -> Disposable {
+    func subscribeProxyDataSource(ofWidget object: Widget, dataSource: RxListBoxDataSource, retainDataSource: Bool = true, binding: @escaping (RxListBoxDataSource, Event<Element>) -> Void) -> Disposable {
         let proxy = RxListBoxDataSource.proxyForObject(object)
         let subscription = self.asObservable()
             .observeOn(MainScheduler())
@@ -159,7 +159,7 @@ public extension ObservableType {
             // source can never end, otherwise it would release the subscriber, and deallocate the data source
             .concat(Observable.never())
             .takeUntil(object.rx.deallocated)
-            .subscribe { [weak object] (event: Event<E>) in
+            .subscribe { [weak object] (event: Event<Element>) in
                 if let object = object {
                     let assignedProxy = RxListBoxDataSource.assignedProxyFor(object)
                     assert(proxy === assignedProxy, "Proxy changed from the time it was first set.\nOriginal: \(proxy)\nExisting: \(String(describing: assignedProxy))")

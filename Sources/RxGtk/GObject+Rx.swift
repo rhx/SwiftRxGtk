@@ -40,7 +40,7 @@ public extension Reactive where Base: Object {
     ///   - retainSelf: `true` if the observable should retain the object
     /// - Returns: an observable for the given property
     func observe<E, P: PropertyNameProtocol>(_ property: P, options: BindingFlags = .sync_create, retainSelf: Bool = true) -> Observable<E?> {
-        return PropertyObservable(object: ObjectRef(base.ptr), property: property, options: options, retainTarget: retainSelf).asObservable()
+        return PropertyObservable(object: ObjectRef(base.object_ptr), property: property, options: options, retainTarget: retainSelf).asObservable()
     }
 
 #if os(Linux)
@@ -73,7 +73,7 @@ public extension Reactive where Base: ObjectProtocol {
     ///   - retainSelf: `true` if the observable should retain the object
     /// - Returns: an observable for the given property
     func observe<E, P: PropertyNameProtocol>(_ property: P, options: BindingFlags = .sync_create, retainSelf: Bool = true) -> Observable<E?> {
-        return PropertyObservable(object: ObjectRef(base.ptr), property: property, options: options, retainTarget: retainSelf).asObservable()
+        return PropertyObservable(object: ObjectRef(base.object_ptr), property: property, options: options, retainTarget: retainSelf).asObservable()
     }
 }
 
@@ -155,18 +155,16 @@ public class PropertyObservable<Element, P: PropertyNameProtocol>: ObservableTyp
         if retainTarget { target.unref() }
     }
 
-    public func subscribe<O: ObserverType>(_ observer: O) -> Disposable where O.E == E {
-        let observer = PropertyObserver(parent: self) {
+    public func subscribe<Observer>(_ observer: Observer) -> Disposable where Observer: ObserverType, Element == Observer.Element {
+        let propertyObserver = PropertyObserver(parent: self) {
             guard let v: Element = $0.get() else {
-                    observer.on(.next(nil))
-                    return
+                return
             }
             observer.on(.next(v))
         }
 
-        return Disposables.create(with: observer.dispose)
+        return Disposables.create(with: propertyObserver.dispose)
     }
-
 }
 
 

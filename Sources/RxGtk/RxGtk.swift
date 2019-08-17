@@ -14,7 +14,7 @@ public extension Reactive where Base: Object {
 
     /// Internal convenience method for observing a value
     static func value<C: Object, P: PropertyNameProtocol, T>(_ obj: C, property p: P, setter: @escaping (C, T) -> Void) -> ControlProperty<T> {
-        let source: Observable<T> = ControlObservable<T, P>(object: ObjectRef(cPointer: obj.ptr), property: p).asObservable().map { $0! }
+        let source: Observable<T> = ControlObservable<T, P>(object: ObjectRef(obj.object_ptr), property: p).asObservable()
 
         let observer = Binder(obj) { setter($0, $1) }.asObserver()
 
@@ -24,7 +24,7 @@ public extension Reactive where Base: Object {
 
 
 class ControlObservable<Element, P: PropertyNameProtocol>: PropertyObservable<Element, P> {
-    override func subscribe<O: ObserverType>(_ observer: O) -> Disposable where O.E == Element {
+    override func subscribe<O: ObserverType>(_ observer: O) -> Disposable where O.Element == Element {
         let observer = PropertyObserver(parent: self) {
             guard let v: Element = $0.get() else {
                 observer.on(.completed)
